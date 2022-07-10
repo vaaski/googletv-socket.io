@@ -32,6 +32,8 @@
     "typescript": "^4.7.4"
   },
   "dependencies": {
-    "debug": "^4.3.4"
+    "debug": "^4.3.4",
+    "googletv": "^0.1.2",
+    "socket.io": "^4.5.1"
   }
 }
