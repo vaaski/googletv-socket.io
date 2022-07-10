@@ -1,0 +1,23 @@
+{
+  "compilerOptions": {
+    "module": "CommonJS",
+    "sourceMap": false,
+    "moduleResolution": "Node",
+    "skipLibCheck": true,
+    "strict": true,
+    "isolatedModules": true,
+    "outDir": "dist",
+    "allowSyntheticDefaultImports": true,
+    "esModuleInterop": true,
+
+    "types": ["@types/node"],
+
+    "baseUrl": ".",
+    "paths": {
+      "/@/*": ["./src/*"],
+      "/$/*": ["./types/*"]
+    }
+  },
+  "include": ["src/**/*.ts", "./types/**/*.d.ts"],
+  "exclude": ["**/*.spec.ts", "**/*.test.ts"]
+}
