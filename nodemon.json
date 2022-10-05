@@ -1,8 +1,14 @@
 {
-  "watch": ["src", "types"],
+  "watch": [
+    "src",
+    "types"
+  ],
   "ext": "ts, json",
   "exec": "node --loader ts-node/esm -r dotenv/config ./src/index.ts",
   "events": {
     "start": "node -e \"console.clear()\""
+  },
+  "env": {
+    "DEBUG": "googletv-socket.io*"
   }
 }

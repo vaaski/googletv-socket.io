@@ -1,9 +1,14 @@
+import { RemoteKeyCode } from "googletv"
+
 import { readFile, writeFile } from "node:fs/promises"
 import path from "path"
 import { fileURLToPath } from "url"
 
 import { GoogleTV } from "googletv"
 import { Server } from "socket.io"
+import debug from "debug"
+
+const log = debug("googletv-socket.io")
 
 const port = parseInt(process.env.SOCKET_PORT ?? "3000")
 
@@ -23,7 +28,7 @@ try {
   const paired = await readFile(CERT_PATH)
   const certificate = JSON.parse(paired.toString()) as { cert: string; key: string }
 
-  console.log("using existing pairing certificate")
+  log("using existing pairing certificate")
 
   gtv = new GoogleTV(GOOGLE_TV_ADDR, { certificate })
 } catch (e) {
@@ -31,11 +36,15 @@ try {
 }
 
 io.on("connection", socket => {
-  console.log("new socket connection")
+  log("new socket connection")
   socket.on("code", code => gtv.sendPairingCode(code))
   socket.on("init", async () => {
     await gtv.init()
     await writeFile(CERT_PATH, JSON.stringify(gtv.options.certificate))
+  })
+  socket.on("key", async (keycode: RemoteKeyCode) => {
+    gtv.remote.sendKey(keycode)
+    log.extend("key")(RemoteKeyCode[keycode])
   })
 })
 
@@ -44,6 +53,6 @@ gtv.on("secretCodeRequest", () => {
 })
 
 io.listen(port)
-console.log(`listening on ${port}`)
+log(`listening on ${port}`)
 
 export {}
