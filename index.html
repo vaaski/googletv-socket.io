@@ -8,18 +8,41 @@
   </head>
   <body>
     <pre>socket status: <span id="status">disconnected</span></pre>
-    <button id="init">init googletv</button>
+    <pre>googletv status: <span id="gtvstatus">not initialized</span></pre>
 
-    <div class="row">
-      <button id="back">🔙</button>
-      <button id="up">🆙</button>
-      <button id="enter">🦆</button>
+    <div class="buttons">
+      <div class="row">
+        <input type="text" id="address" placeholder="address" />
+        <button id="init">init googletv</button>
+      </div>
+
+      <br>
+
+      <div class="row">
+        <button id="back">🔙</button>
+        <button id="up">🆙</button>
+        <button id="enter">🦆</button>
+      </div>
+      <div class="row">
+        <button id="left">👈</button>
+        <button id="down">👎</button>
+        <button id="right">➡️</button>
+      </div>
     </div>
-    <div class="row">
-      <button id="left">👈</button>
-      <button id="down">👎</button>
-      <button id="right">➡️</button>
-    </div>
+
+    <div id="messages"></div>
+
+    <style>
+      #messages {
+        height: 200px;
+        overflow: scroll;
+        padding: 1em 0;
+      }
+
+      #messages > pre {
+        margin: 0;
+      }
+    </style>
   </body>
-  <script src="example.ts"></script>
+  <script type="module" src="example.ts"></script>
 </html>

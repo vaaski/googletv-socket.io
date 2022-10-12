@@ -1,3 +1,5 @@
+import type { GTV } from "googletv/types/index.js"
+
 import { RemoteKeyCode } from "googletv"
 
 import { readFile, writeFile } from "node:fs/promises"
@@ -12,47 +14,76 @@ const log = debug("googletv-socket.io")
 
 const port = parseInt(process.env.SOCKET_PORT ?? "3000")
 
-const io = new Server({
-  cors: { origin: "*" },
-})
+const io = new Server({ cors: { origin: "*" } })
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
 
-const GOOGLE_TV_ADDR = "gtv"
-const CERT_PATH = path.join(__dirname, "./pairing-cert.json")
+const SETTINGS_PATH = path.join(__dirname, "../settings.json")
+interface Settings {
+  hostname?: string
+  cert?: GTV.Certificate
+}
+let settings: Settings = {}
+const saveSettings = async () => {
+  await writeFile(SETTINGS_PATH, JSON.stringify(settings, null, 2))
+}
 
 let gtv: GoogleTV
 
-try {
-  const paired = await readFile(CERT_PATH)
-  const certificate = JSON.parse(paired.toString()) as { cert: string; key: string }
+const initGTV = async (address: string) => {
+  if (gtv) return
 
-  log("using existing pairing certificate")
+  const certificate = settings.cert
+  gtv = new GoogleTV(address, { certificate })
 
-  gtv = new GoogleTV(GOOGLE_TV_ADDR, { certificate })
-} catch (e) {
-  gtv = new GoogleTV(GOOGLE_TV_ADDR)
+  gtv.on("secretCodeRequest", () => {
+    io.emit("secretCodeRequest")
+  })
+
+  log("pre-init")
+  await gtv.init()
+  log("post-init")
+
+  gtv.remote.on("power", state => io.emit("power", state))
+  gtv.remote.on("currentApp", app => io.emit("currentApp", app))
+  gtv.remote.on("volumeState", state => io.emit("volumeState", state))
+  gtv.remote.on("error", error => io.emit("error", error))
+  gtv.remote.on("ready", () => io.emit("ready"))
+  gtv.remote.on("unpaired", () => io.emit("unpaired"))
+
+  settings.cert = gtv.options.certificate
+  settings.hostname = gtv.host
+
+  await saveSettings()
 }
 
 io.on("connection", socket => {
   log("new socket connection")
+
   socket.on("code", code => gtv.sendPairingCode(code))
-  socket.on("init", async () => {
-    await gtv.init()
-    await writeFile(CERT_PATH, JSON.stringify(gtv.options.certificate))
+  socket.on("init", async (address: string, cb: () => void = () => undefined) => {
+    await initGTV(address)
+    return cb()
   })
+
   socket.on("key", async (keycode: RemoteKeyCode) => {
-    gtv.remote.sendKey(keycode)
-    log.extend("key")(RemoteKeyCode[keycode])
+    gtv.sendKey(keycode)
+    log.extend("key")(`${RemoteKeyCode[keycode]} (${keycode})`)
   })
 })
 
-gtv.on("secretCodeRequest", () => {
-  io.emit("secretCodeRequest")
-})
-
-io.listen(port)
-log(`listening on ${port}`)
+readFile(SETTINGS_PATH, "utf-8")
+  .then(file => {
+    if (file) settings = JSON.parse(file) as Settings
+  })
+  .catch(log)
+  .then(() => {
+    if (settings.cert && settings.hostname) initGTV(settings.hostname)
+  })
+  .then(() => {
+    io.listen(port)
+    log(`listening on ${port}`)
+  })
 
 export {}

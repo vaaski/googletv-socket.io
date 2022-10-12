@@ -8,10 +8,13 @@
   "author": "vaaski <admin@vaa.ski>",
   "scripts": {
     "start": "node -r dotenv/config dist",
-    "build": "rimraf dist && tsc",
+    "build": "rimraf dist && npm run example:build && tsc",
     "prepare": "npm run build",
     "dev": "nodemon",
-    "format": "prettier -w **/*.{vue,ts,js,json}"
+    "ui": "vite",
+    "format": "prettier -w **/*.{vue,ts,js,json}",
+    "example": "vite --open",
+    "example:build": "vite build"
   },
   "type": "module",
   "files": [
@@ -35,7 +38,7 @@
   },
   "dependencies": {
     "debug": "^4.3.4",
-    "googletv": "^0.1.3",
+    "googletv": "^0.1.4",
     "socket.io": "^4.5.2",
     "vite": "^3.1.4"
   }
