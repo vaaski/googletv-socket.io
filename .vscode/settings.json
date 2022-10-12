@@ -1,0 +1,12 @@
+{
+  "json.schemas": [
+    {
+      "fileMatch": ["pm2.json"],
+      "url": "https://raw.githubusercontent.com/edosssa/pm2-config/master/pm2config.json"
+    },
+    {
+      "fileMatch": ["nodemon.json"],
+      "url": "https://raw.githubusercontent.com/SchemaStore/schemastore/master/src/schemas/json/nodemon.json"
+    }
+  ]
+}
