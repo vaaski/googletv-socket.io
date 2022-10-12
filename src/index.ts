@@ -15,6 +15,7 @@ import debug from "debug"
 const log = debug("googletv-socket.io")
 
 const port = parseInt(process.env.SOCKET_PORT ?? "3000")
+const name = process.env.REMOTE_NAME ?? "socket.io remote"
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
 
@@ -38,8 +39,11 @@ let gtv: GoogleTV
 const initGTV = async (address: string) => {
   if (gtv) return
 
-  const certificate = settings.cert
-  gtv = new GoogleTV(address, { certificate })
+  gtv = new GoogleTV(address, {
+    certificate: settings.cert,
+    clientName: name,
+    serviceName: name,
+  })
 
   gtv.on("secretCodeRequest", () => {
     io.emit("secretCodeRequest")
@@ -87,7 +91,7 @@ readFile(SETTINGS_PATH, "utf-8")
   })
   .then(() => {
     httpServer.listen(port)
-    log(`listening on ${port}`)
+    console.log(`listening on :${port}`)
   })
 
 export {}
