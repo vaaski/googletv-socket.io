@@ -51,13 +51,8 @@ const main = async () => {
   const RemoteKeyCode = await setupKeyCodes()
 
   const initGTV = () => {
-    return new Promise<void>(res => {
-      if (!addressInput.value) return res()
-      return socket.emit("init", addressInput.value, () => {
-        gtvStatus.innerText = "initialized"
-        res()
-      })
-    })
+    if (!addressInput.value) return
+    socket.emit("init", addressInput.value)
   }
 
   socket.on("secretCodeRequest", () => {
@@ -70,6 +65,9 @@ const main = async () => {
   socket.on("disconnect", () => {
     statusText.innerText = "disconnected"
     gtvStatus.innerText = "not initialized"
+  })
+  socket.on("init", () => {
+    gtvStatus.innerText = "initialized"
   })
 
   for (const event of eventsToLog) {

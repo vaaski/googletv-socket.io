@@ -69,10 +69,12 @@ const initGTV = async (address: string) => {
 io.on("connection", socket => {
   log("new socket connection")
 
+  if (gtv) socket.emit("init")
+
   socket.on("code", code => gtv.sendPairingCode(code))
-  socket.on("init", async (address: string, cb: () => void = () => undefined) => {
+  socket.on("init", async (address: string) => {
     await initGTV(address)
-    return cb()
+    return io.emit("init")
   })
 
   socket.on("key", async (keycode: RemoteKeyCode) => {
