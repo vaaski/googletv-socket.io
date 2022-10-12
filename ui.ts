@@ -21,7 +21,7 @@ const eventsToLog = ["power", "currentApp", "volumeState", "error", "ready", "un
 const setupSocket = async () => {
   const module = await import("socket.io-client")
   const io = module.default
-  const socket = io("http://localhost:3000")
+  const socket = io()
   return socket
 }
 

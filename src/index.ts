@@ -7,17 +7,21 @@ import path from "path"
 import { fileURLToPath } from "url"
 
 import { GoogleTV } from "googletv"
+import { createServer } from "node:http"
+import express from "express"
 import { Server } from "socket.io"
 import debug from "debug"
 
 const log = debug("googletv-socket.io")
 
 const port = parseInt(process.env.SOCKET_PORT ?? "3000")
-
-const io = new Server({ cors: { origin: "*" } })
-
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
+
+const exp = express()
+const httpServer = createServer(exp)
+const io = new Server(httpServer, { cors: { origin: "*" } })
+exp.use(express.static(path.join(__dirname, "../dist")))
 
 const SETTINGS_PATH = path.join(__dirname, "../settings.json")
 interface Settings {
@@ -82,7 +86,7 @@ readFile(SETTINGS_PATH, "utf-8")
     if (settings.cert && settings.hostname) initGTV(settings.hostname)
   })
   .then(() => {
-    io.listen(port)
+    httpServer.listen(port)
     log(`listening on ${port}`)
   })
 
